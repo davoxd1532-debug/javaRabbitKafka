@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -178,18 +178,29 @@ public class ConnectRabbitmq {
     }
 
     public static void publishFromGenexusXml(Connection connection, RabbitConfig config, String sdtXml) throws Exception {
-        // Convertir XML -> JSON
         XmlMapper xmlMapper = new XmlMapper();
-        JsonNode node = xmlMapper.readTree(sdtXml.getBytes("UTF-8"));
+        JsonNode root = xmlMapper.readTree(sdtXml.getBytes("UTF-8"));
 
-        ObjectMapper jsonMapper = new ObjectMapper();
+        // ⚡ Mapa donde construiremos el JSON plano
+        Map<String, Object> jsonMap = new HashMap<>();
 
-        // Aquí eliminamos el warning de "unchecked conversion"
-        Map<String, Object> jsonMap = jsonMapper.convertValue(
-            node,
-            new TypeReference<Map<String, Object>>() {}
-        );
+        // 1) Navegar hasta el nodo "Cliente"
+        JsonNode clienteNode = root.findPath("Cliente");
 
+        // 2) Iterar cada "RngParm.it"
+        Iterator<JsonNode> elements = clienteNode.elements();
+        while (elements.hasNext()) {
+            JsonNode rngNode = elements.next();
+
+            String key = rngNode.findPath("Nombre").asText();
+            String value = rngNode.findPath("Valor").asText();
+
+            if (!key.isEmpty()) {
+                jsonMap.put(key, value);
+            }
+        }
+
+        // 3) Publicar en Rabbit como JSON plano
         publishAsJson(connection, config, jsonMap);
     }
 }
