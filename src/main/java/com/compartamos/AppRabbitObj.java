@@ -2,7 +2,7 @@ package com.compartamos;
 
 import java.util.*;
 
-public class AppRabbitObjL {
+public class AppRabbitObj {
     public static void main(String[] args) {
         try {
             String host = "localhost";
