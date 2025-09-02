@@ -1,10 +1,13 @@
 package com.compartamos.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -174,4 +177,19 @@ public class ConnectRabbitmq {
         publishAsJson(connection, config, jsonMap);
     }
 
+    public static void publishFromGenexusXml(Connection connection, RabbitConfig config, String sdtXml) throws Exception {
+        // Convertir XML -> JSON
+        XmlMapper xmlMapper = new XmlMapper();
+        JsonNode node = xmlMapper.readTree(sdtXml.getBytes("UTF-8"));
+
+        ObjectMapper jsonMapper = new ObjectMapper();
+
+        // Aquí eliminamos el warning de "unchecked conversion"
+        Map<String, Object> jsonMap = jsonMapper.convertValue(
+            node,
+            new TypeReference<Map<String, Object>>() {}
+        );
+
+        publishAsJson(connection, config, jsonMap);
+    }
 }
