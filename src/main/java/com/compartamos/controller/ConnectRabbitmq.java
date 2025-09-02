@@ -1,5 +1,6 @@
 package com.compartamos.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
@@ -160,6 +161,17 @@ public class ConnectRabbitmq {
                 }
             }
         }
+    }
+
+    //4) Método para probar envio de mensajes transformando el SDT a JSON
+    public static void publishFromGenexusJson(Connection connection, RabbitConfig config, String sdtJson) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        // Indicamos explícitamente que queremos Map<String,Object>
+        Map<String, Object> jsonMap = objectMapper.readValue(
+            sdtJson, 
+            new TypeReference<Map<String, Object>>() {}
+        );
+        publishAsJson(connection, config, jsonMap);
     }
 
 }
