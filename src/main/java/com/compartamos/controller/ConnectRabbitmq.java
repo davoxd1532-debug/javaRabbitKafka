@@ -121,11 +121,11 @@ public class ConnectRabbitmq {
     // NUEVOS MÉTODOS GENÉRICOS 31.08.2025
     // ====================================
 
-    // 1) Publicar desde un SDT dinámico (Descripcion, Valor)
+    // 1) Publicar desde un SDT dinámico (Nombre, Valor)
     public static void publishFromDynamicSDT(Connection connection, RabbitConfig config, List<Map<String, String>> sdtData) throws Exception {
         Map<String, Object> jsonMap = new HashMap<>();
         for (Map<String, String> item : sdtData) {
-            String key = item.get("Descripcion");
+            String key = item.get("Nombre");
             String value = item.get("Valor");
             jsonMap.put(key, value);
         }
