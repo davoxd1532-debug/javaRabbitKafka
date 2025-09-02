@@ -23,10 +23,10 @@ public class AppRabbitObj {
                 campo1.put("Descripcion", "Canal");
                 campo1.put("Valor", "AGENCIA");
                 sdt.add(campo1);
-
+                
                 // Llamada directa al método que publica dinámicamente en JSON
                 com.compartamos.controller.ConnectRabbitmq.publishFromDynamicSDT(connection, config, sdt);
-
+                
             } catch (Exception e) {
                 e.printStackTrace();
             }
