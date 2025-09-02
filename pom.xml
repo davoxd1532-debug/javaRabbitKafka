@@ -5,7 +5,7 @@
     
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.compartamos</groupId>
-    <artifactId>apiRabbitMq</artifactId>
+    <artifactId>apiKafka</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
 
@@ -16,13 +16,6 @@
     </properties>
 
     <dependencies>
-        <!-- RabbitMQ -->
-        <dependency>
-            <groupId>com.rabbitmq</groupId>
-            <artifactId>amqp-client</artifactId>
-            <version>5.22.0</version>
-        </dependency>
-
         <!-- Jackson para serialización JSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
