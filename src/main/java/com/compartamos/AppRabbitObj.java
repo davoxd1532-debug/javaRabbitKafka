@@ -15,16 +15,16 @@ public class AppRabbitObj {
 
                 com.compartamos.conf.RabbitConfig config = new com.compartamos.conf.RabbitConfig("biometria.queue", "biometria.exchange", "biometria.routingkey");
 
-                // Aquí llega tu SDT de GeneXus transformado a lista de pares (Descripcion, Valor)
+                // Aquí llega tu SDT de GeneXus transformado a lista de pares (Nombre, Valor)
                 java.util.List<Map<String, String>> sdt = new java.util.ArrayList<>();
 
                 // Ejemplo de prueba (solo si quieres simular en Java)
                 java.util.Map<String, String> campo1 = new java.util.HashMap<>();
-                campo1.put("Descripcion", "Canal");
+                campo1.put("Nombre", "Canal");
                 campo1.put("Valor", "AGENCIA");
                 sdt.add(campo1);
                 java.util.Map<String, String> campo2 = new java.util.HashMap<>();
-                campo2.put("Descripcion", "Canal2");
+                campo2.put("Nombre", "Canal2");
                 campo2.put("Valor", "AGENCIA2");
                 sdt.add(campo2);
 
