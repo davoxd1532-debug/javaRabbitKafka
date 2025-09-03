@@ -1,6 +1,5 @@
 package com.compartamos.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
@@ -8,9 +7,6 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import com.compartamos.conf.ConfigServer;
 import com.compartamos.conf.RabbitConfig;

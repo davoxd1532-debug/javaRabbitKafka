@@ -1,9 +1,6 @@
 package com.compartamos;
 
-import java.util.*;
-
 import com.compartamos.controller.ConnectRabbitmq;
-import com.compartamos.model.Estructura;
 
 public class AppRabbitObj {
     public static void main(String[] args) {
