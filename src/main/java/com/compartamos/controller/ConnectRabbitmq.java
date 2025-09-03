@@ -1,7 +1,6 @@
 package com.compartamos.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
@@ -9,7 +8,6 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -124,24 +122,18 @@ public class ConnectRabbitmq {
     // ====================================
     // NUEVOS MÉTODOS GENÉRICOS 31.08.2025
     // ====================================
-
-    // 1) Publicar desde un SDT dinámico (Nombre, Valor)
+    
     public static void publishFromDynamicSDT(Connection connection, RabbitConfig config, List<Map<String, String>> sdtData) throws Exception {
         Map<String, Object> jsonMap = new HashMap<>();
         for (Map<String, String> item : sdtData) {
-            String key = item.get("Nombre");
+            String key = item.get("Descripcion");
             String value = item.get("Valor");
             jsonMap.put(key, value);
         }
         publishAsJson(connection, config, jsonMap);
     }
 
-    // 2) Publicar un objeto cualquiera (Estructura, DTO, etc.)
-    public static void publishObject(Connection connection, RabbitConfig config, Object data) throws Exception {
-        publishAsJson(connection, config, data);
-    }
-
-    // 3) Método genérico interno que convierte a JSON y publica
+    // 1) Método genérico interno que convierte a JSON y publica
     private static void publishAsJson(Connection connection, RabbitConfig config, Object data) throws Exception {
         Channel channel = null;
         try {
@@ -166,41 +158,31 @@ public class ConnectRabbitmq {
         }
     }
 
-    //4) Método para probar envio de mensajes transformando el SDT a JSON
-    public static void publishFromGenexusJson(Connection connection, RabbitConfig config, String sdtJson) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        // Indicamos explícitamente que queremos Map<String,Object>
-        Map<String, Object> jsonMap = objectMapper.readValue(
-            sdtJson, 
+    public static void publishFromGenexusXml(Connection connection, RabbitConfig config, String sdtXml) throws Exception {
+        // 1. Parsear el XML a un Map genérico
+        XmlMapper xmlMapper = new XmlMapper();
+        Map<String, Object> rawMap = xmlMapper.readValue(
+            sdtXml,
             new TypeReference<Map<String, Object>>() {}
         );
-        publishAsJson(connection, config, jsonMap);
-    }
 
-    public static void publishFromGenexusXml(Connection connection, RabbitConfig config, String sdtXml) throws Exception {
-        XmlMapper xmlMapper = new XmlMapper();
-        JsonNode root = xmlMapper.readTree(sdtXml.getBytes("UTF-8"));
+        // 2. El XML se convierte en { "RngParm.it": [ {Nombre=..., Valor=...}, ... ] }
+        @SuppressWarnings("unchecked") // evitamos warning de tipo
+        List<Map<String, String>> items = (List<Map<String, String>>) rawMap.get("RngParm.it");
 
-        // ⚡ Mapa donde construiremos el JSON plano
+        // 3. Transformar a { "Nombre1": "Valor1", "Nombre2": "Valor2", ... }
         Map<String, Object> jsonMap = new HashMap<>();
-
-        // 1) Navegar hasta el nodo "Cliente"
-        JsonNode clienteNode = root.findPath("Cliente");
-
-        // 2) Iterar cada "RngParm.it"
-        Iterator<JsonNode> elements = clienteNode.elements();
-        while (elements.hasNext()) {
-            JsonNode rngNode = elements.next();
-
-            String key = rngNode.findPath("Nombre").asText();
-            String value = rngNode.findPath("Valor").asText();
-
-            if (!key.isEmpty()) {
-                jsonMap.put(key, value);
+        if (items != null) {
+            for (Map<String, String> item : items) {
+                String key = item.get("Nombre");
+                String value = item.get("Valor");
+                if (key != null) {
+                    jsonMap.put(key, value);
+                }
             }
         }
 
-        // 3) Publicar en Rabbit como JSON plano
+        // 4. Publicar en Rabbit como JSON
         publishAsJson(connection, config, jsonMap);
     }
 }
