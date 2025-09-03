@@ -2,6 +2,9 @@ package com.compartamos;
 
 import java.util.*;
 
+import com.compartamos.controller.ConnectRabbitmq;
+import com.compartamos.model.Estructura;
+
 public class AppRabbitObj {
     public static void main(String[] args) {
         try {
@@ -14,23 +17,42 @@ public class AppRabbitObj {
                 System.out.println("Conexión establecida con éxito.");
 
                 com.compartamos.conf.RabbitConfig config = new com.compartamos.conf.RabbitConfig("biometria.queue", "biometria.exchange", "biometria.routingkey");
-
-                // Aquí llega tu SDT de GeneXus transformado a lista de pares (Nombre, Valor)
-                java.util.List<Map<String, String>> sdt = new java.util.ArrayList<>();
-
-                // Ejemplo de prueba (solo si quieres simular en Java)
-                java.util.Map<String, String> campo1 = new java.util.HashMap<>();
-                campo1.put("Nombre", "Canal");
-                campo1.put("Valor", "AGENCIA");
-                sdt.add(campo1);
-                java.util.Map<String, String> campo2 = new java.util.HashMap<>();
-                campo2.put("Nombre", "Canal2");
-                campo2.put("Valor", "AGENCIA2");
-                sdt.add(campo2);
-
-                // Llamada directa al método que publica dinámicamente en JSON
-                com.compartamos.controller.ConnectRabbitmq.publishFromDynamicSDT(connection, config, sdt);
                 
+                //Definir Estructura
+                com.compartamos.model.Estructura estructura = new com.compartamos.model.Estructura();
+                estructura.setCanal("AGENCIA");
+                estructura.setEmpresa(123);
+                estructura.setSucursal(456);
+                estructura.setModulo(789);
+                estructura.setTransaccion(1011);
+                estructura.setRelacion(2021);
+                //estructura.setFecha("2024-09-19");
+                estructura.setPais(604);
+                estructura.setTipoDocumento(1);
+                estructura.setNumeroDocumento("ABC123");
+                estructura.setTipo("Factura");
+                estructura.setSubTipo("Electronica");
+                estructura.setHora("12:00:00");
+                estructura.setHoraFirma("12:00:05");
+                estructura.setWorkstation("WS01");
+                estructura.setUsuario("usuario1");
+                estructura.setUsuarioSucursal(555);
+                estructura.setTrace("20240606180115222-RPUMA-SG2");
+                estructura.setAux1("Auxiliar1");
+                estructura.setAux2("Auxiliar2");
+                estructura.setAux3("Auxiliar3");
+                estructura.setAux4(99.99);
+
+                // Publicar diferentes tipos de mensajes
+                //Text
+                ConnectRabbitmq.publishText(connection, config, "Hola RabbitMQ!");
+                // JSON
+                ConnectRabbitmq.publishJson(connection, config, estructura);
+                // XML
+                ConnectRabbitmq.publishXml(connection, config, estructura);
+                // Objeto genérico (usa toString())
+                ConnectRabbitmq.publishObject(connection, config, estructura);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

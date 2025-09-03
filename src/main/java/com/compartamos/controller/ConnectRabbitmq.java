@@ -7,6 +7,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,70 +120,59 @@ public class ConnectRabbitmq {
         }
     }
     
-    // ====================================
-    // NUEVOS MÉTODOS GENÉRICOS 31.08.2025
-    // ====================================
-    
-    public static void publishFromDynamicSDT(Connection connection, RabbitConfig config, List<Map<String, String>> sdtData) throws Exception {
-        Map<String, Object> jsonMap = new HashMap<>();
-        for (Map<String, String> item : sdtData) {
-            String key = item.get("Descripcion");
-            String value = item.get("Valor");
-            jsonMap.put(key, value);
-        }
-        publishAsJson(connection, config, jsonMap);
+    // ===================== MÉTODOS DE PUBLICACIÓN =====================
+
+    // Publicar texto plano
+    public static void publishText(Connection connection, RabbitConfig config, String message) throws Exception {
+        publish(connection, config, message);
     }
 
-    // 1) Método genérico interno que convierte a JSON y publica
-    private static void publishAsJson(Connection connection, RabbitConfig config, Object data) throws Exception {
+    // Publicar JSON (cualquier objeto se serializa a JSON)
+    public static void publishJson(Connection connection, RabbitConfig config, Object data) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonMessage = objectMapper.writeValueAsString(data);
+        publish(connection, config, jsonMessage);
+    }
+
+    // Publicar XML (cualquier objeto se serializa a XML)
+    public static void publishXml(Connection connection, RabbitConfig config, Object data) throws Exception {
+        XmlMapper xmlMapper = new XmlMapper();
+        String xmlMessage = xmlMapper.writeValueAsString(data);
+        publish(connection, config, xmlMessage);
+    }
+
+    // Publicar Objeto (simplemente lo convierte a String usando toString())
+    public static void publishObject(Connection connection, RabbitConfig config, Object obj) throws Exception {
+        String objMessage = obj.toString();
+        publish(connection, config, objMessage);
+    }
+
+    // ===================== MÉTODO BASE =====================
+    private static void publish(Connection connection, RabbitConfig config, String message) throws Exception {
         Channel channel = null;
         try {
             channel = connection.createChannel();
+
+            // Declarar recursos de RabbitMQ
             channel.queueDeclare(config.getQueue(), true, false, false, null);
             channel.exchangeDeclare(config.getExchange(), "direct", true);
             channel.queueBind(config.getQueue(), config.getExchange(), config.getRoutingKey());
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            String jsonMessage = objectMapper.writeValueAsString(data);
+            // Publicar mensaje
+            channel.basicPublish(config.getExchange(), config.getRoutingKey(), null, message.getBytes(StandardCharsets.UTF_8));
+            System.out.println("Mensaje publicado: " + message);
 
-            channel.basicPublish(config.getExchange(), config.getRoutingKey(), null, jsonMessage.getBytes("UTF-8"));
-            System.out.println("Mensaje JSON enviado a la cola " + config.getQueue() + ": " + jsonMessage);
+        } catch (Exception e) {
+            System.err.println("Error al publicar mensaje: " + e.getMessage());
+            throw e;
         } finally {
             if (channel != null) {
                 try {
                     channel.close();
                 } catch (Exception e) {
-                    System.err.println("Error al cerrar el canal: " + e.getMessage());
+                    System.err.println("Error al cerrar canal: " + e.getMessage());
                 }
             }
         }
-    }
-
-    public static void publishFromGenexusXml(Connection connection, RabbitConfig config, String sdtXml) throws Exception {
-        // 1. Parsear el XML a un Map genérico
-        XmlMapper xmlMapper = new XmlMapper();
-        Map<String, Object> rawMap = xmlMapper.readValue(
-            sdtXml,
-            new TypeReference<Map<String, Object>>() {}
-        );
-
-        // 2. El XML se convierte en { "RngParm.it": [ {Nombre=..., Valor=...}, ... ] }
-        @SuppressWarnings("unchecked") // evitamos warning de tipo
-        List<Map<String, String>> items = (List<Map<String, String>>) rawMap.get("RngParm.it");
-
-        // 3. Transformar a { "Nombre1": "Valor1", "Nombre2": "Valor2", ... }
-        Map<String, Object> jsonMap = new HashMap<>();
-        if (items != null) {
-            for (Map<String, String> item : items) {
-                String key = item.get("Nombre");
-                String value = item.get("Valor");
-                if (key != null) {
-                    jsonMap.put(key, value);
-                }
-            }
-        }
-
-        // 4. Publicar en Rabbit como JSON
-        publishAsJson(connection, config, jsonMap);
     }
 }
