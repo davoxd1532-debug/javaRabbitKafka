@@ -145,6 +145,12 @@ public class ConnectRabbitmq {
         publish(connection, config, jsonArrayMessage);
     }
 
+    // Publicar JSONArray desde String (se convierte a JSONArray internamente)
+    public static void publishJsonArrayFromString(Connection connection, RabbitConfig config, String jsonString) throws Exception {
+        JSONArray jsonArray = new JSONArray(jsonString);
+        publishJsonArray(connection, config, jsonArray);
+    }
+
     // Publicar Objeto (simplemente lo convierte a String usando toString())
     public static void publishObject(Connection connection, RabbitConfig config, Object obj) throws Exception {
         String objMessage = obj.toString();
