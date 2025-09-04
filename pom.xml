@@ -5,7 +5,7 @@
     
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.compartamos</groupId>
-    <artifactId>javaRabbitMq</artifactId>
+    <artifactId>javaRabbitMqKafka</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
 
@@ -42,6 +42,13 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
             <version>2.16.1</version>
+        </dependency>
+
+        <!-- Kafka client -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>3.7.0</version>
         </dependency>
     </dependencies>
 </project>
