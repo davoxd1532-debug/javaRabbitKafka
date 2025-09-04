@@ -49,6 +49,10 @@ public class AppRabbitObj {
                 ConnectRabbitmq.publishXml(connection, config, estructura);
                 // Objeto genérico (usa toString())
                 ConnectRabbitmq.publishObject(connection, config, estructura);
+                
+                // Publicar mensaje desde XML         
+                String sdtXml = "<RngParm xmlns=\"Microfinanzas\"><RngParm.it><Nombre>empresa</Nombre><Valor>1</Valor></RngParm.it><RngParm.it><Nombre>Canal</Nombre><Valor>Bantotal</Valor></RngParm.it><RngParm.it><Nombre>Monto</Nombre><Valor>1000</Valor></RngParm.it><RngParm.it><Nombre>Sucursal</Nombre><Valor>423</Valor></RngParm.it></RngParm>";
+                ConnectRabbitmq.publishFromXml(connection, config, sdtXml);
 
             } catch (Exception e) {
                 e.printStackTrace();
