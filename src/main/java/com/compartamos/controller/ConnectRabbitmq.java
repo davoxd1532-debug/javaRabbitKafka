@@ -12,6 +12,8 @@ import com.compartamos.conf.ConfigServer;
 import com.compartamos.conf.RabbitConfig;
 import com.compartamos.model.Estructura;
 
+import org.json.JSONArray;
+
 public class ConnectRabbitmq {
 
     // Método para crear la conexión
@@ -135,6 +137,12 @@ public class ConnectRabbitmq {
         XmlMapper xmlMapper = new XmlMapper();
         String xmlMessage = xmlMapper.writeValueAsString(data);
         publish(connection, config, xmlMessage);
+    }
+
+    // Publicar JSONArray (org.json)
+    public static void publishJsonArray(Connection connection, RabbitConfig config, JSONArray jsonArray) throws Exception {
+        String jsonArrayMessage = jsonArray.toString(); // convierte a JSON string
+        publish(connection, config, jsonArrayMessage);
     }
 
     // Publicar Objeto (simplemente lo convierte a String usando toString())
