@@ -8,11 +8,16 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import java.nio.charset.StandardCharsets;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import com.compartamos.conf.ConfigServer;
 import com.compartamos.conf.RabbitConfig;
 import com.compartamos.model.Estructura;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 
 public class ConnectRabbitmq {
 
@@ -155,6 +160,30 @@ public class ConnectRabbitmq {
     public static void publishObject(Connection connection, RabbitConfig config, Object obj) throws Exception {
         String objMessage = obj.toString();
         publish(connection, config, objMessage);
+    }
+
+    public static void publishFromXml(Connection connection, RabbitConfig config, String xml) throws Exception {
+        JSONObject jsonObject = new JSONObject();
+
+        // Parseamos el XML
+        Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                .parse(new java.io.ByteArrayInputStream(xml.getBytes("UTF-8")));
+        doc.getDocumentElement().normalize();
+
+        NodeList items = doc.getElementsByTagName("RngParm.it");
+
+        for (int i = 0; i < items.getLength(); i++) {
+            Node node = items.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                Element element = (Element) node;
+                String nombre = element.getElementsByTagName("Nombre").item(0).getTextContent();
+                String valor  = element.getElementsByTagName("Valor").item(0).getTextContent();
+                jsonObject.put(nombre, valor);
+            }
+        }
+
+        // Publicamos en la cola
+        publish(connection, config, jsonObject.toString());
     }
 
     // ===================== MÉTODO BASE =====================
